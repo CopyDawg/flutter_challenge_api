@@ -28,16 +28,20 @@ app.post('/register', async (req,res) => {
 
 app.post('/login', async(req, res) => {
     const {username, password} = req.body;
-    const userDoc = await User.findOne({username});
-    if(userDoc) {
-        const passOk = bcrypt.compareSync(password, userDoc.password);
-        if(!passOk) {
-            res.status(400).json("Wrong credentials");
+    try {
+        const userDoc = await User.findOne({username});
+        if(userDoc) {
+            const passOk = bcrypt.compareSync(password, userDoc.password);
+            if(!passOk) {
+                return res.status(401).json("Wrong credentials");
+            }
+            return res.status(200).json({id: userDoc._id, username: userDoc.username});
         }
-        res.status(200).json({id: userDoc._id, username: userDoc.username});
-    }
-    else {
-        res.status(400).json("Wrong credentials");
+        else {
+            return res.status(401).json("User not found");
+        }
+    } catch (error) {
+        return res.status(400).json(error);
     }
 });
 
